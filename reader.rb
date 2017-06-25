@@ -8,7 +8,7 @@ class Reader
 
   def next
     @position += 1
-    @tokens[@position]
+    @tokens[@position - 1]
   end
 
   def peek
@@ -24,20 +24,21 @@ class Tokenizer
   def tokenizer(str)
     tokens = []
 
-    while str
+    i = 0
+    while str.size > 0
       match = @re.match(str)
       if match == nil
         return nil
       end
 
       if match[0] != "" && match[0][0..0] != ";"
-        tokens.append(match[0])
+        tokens.push(match[0])
       end
 
       str = str[match[0].size..-1]
     end
 
-    tokens
+    read_form(Reader.new(tokens))
   end
 
   def read_str(str)
@@ -56,13 +57,15 @@ class Tokenizer
   end
 
   def read_form(reader)
-    if read.peek == "("
-      read_list(reader)
-    else
-      read_atom(reader)
+    return case reader.peek
+      when ";" then nil
+      when "(" then read_list(reader)
+      when ")" then raise "unexpected ')'"
+      else read_atom(reader);
+    end
   end
 
-  def read_list(reader, start = "(", end = ")")
+  def read_list(reader, start = "(", last = ")")
     list = []
     token = reader.next
 
@@ -74,8 +77,8 @@ class Tokenizer
       if not token
         raise "unclosed list"
       end
-
-      list.append(read_form(token))
+      # puts read_form(reader)
+      list.push(read_form(reader))
     end
     reader.next
 
@@ -94,3 +97,5 @@ class Tokenizer
     end
   end
 end
+
+puts Tokenizer.new.tokenizer("(+ 2 3)")

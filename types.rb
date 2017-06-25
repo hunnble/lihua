@@ -1,10 +1,10 @@
-class Exception < StandardError
-  attr_reader :e
+# class Exception < StandardError
+#   attr_reader :e
 
-  def initialize(e)
-    @e = e
-  end
-end
+#   def initialize(e)
+#     @e = e
+#   end
+# end
 
 class String
   attr_accessor :str
