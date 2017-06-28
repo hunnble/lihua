@@ -8,11 +8,11 @@ class Reader
 
   def next
     @position += 1
-    @tokens[@position - 1]
+    @tokens[@position - 1].strip
   end
 
   def peek
-    @tokens[@position]
+    @tokens[@position].strip
   end
 end
 
@@ -23,7 +23,6 @@ class Tokenizer
 
   def tokenize(str)
     tokens = []
-    str = str.gsub(/\s/, '')
 
     i = 0
     while str.size > 0
@@ -90,7 +89,7 @@ class Tokenizer
   def read_atom(reader)
     token = reader.next
     return case token
-      when "nil" then nil
+      when nil then nil
       when "true" then true
       when "false" then false
       when /^-?[0-9]+$/ then token.to_i
@@ -100,6 +99,7 @@ class Tokenizer
   end
 end
 
-# puts Tokenizer.new.read_str("")
+puts Tokenizer.new.read_str("12 34")
 # puts "----------------------------"
 # puts Tokenizer.new.read_str("(+ 2(* 3 4 ) 5)")
+# puts Tokenizer.new.read_str("(+ 2 5)")

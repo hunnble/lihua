@@ -12,13 +12,11 @@ class TestTokenizer < Minitest::Test
 
   def test_tokenizer_simple
     assert_equal @tokenizer.read_str("123"), 123
-    assert_equal @tokenizer.read_str("12 3"), 123
     assert_equal @tokenizer.read_str("abc"), :abc
-    assert_equal @tokenizer.read_str("ab c"), :abc
   end
 
   def test_tokenizer_list
-    assert_equal @tokenizer.read_str("(+ 2 3)"), [:"+23"]
-    assert_equal @tokenizer.read_str("(+ (+ 2 3) 4)"), [:+, [:"+23"], 4]
+    assert_equal @tokenizer.read_str("(+ 2 3)"), [:+, 2, 3]
+    assert_equal @tokenizer.read_str("(+ (+ 2 3) 4)"), [:+, [:+, 2, 3], 4]
   end
 end
