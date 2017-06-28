@@ -21,8 +21,9 @@ class Tokenizer
     @re = /[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"|;.*|[^\s\[\]{}('"`,;)]*)/
   end
 
-  def tokenizer(str)
+  def tokenize(str)
     tokens = []
+    str = str.gsub(/\s/, '')
 
     i = 0
     while str.size > 0
@@ -38,11 +39,13 @@ class Tokenizer
       str = str[match[0].size..-1]
     end
 
-    read_form(Reader.new(tokens))
+    tokens
   end
 
   def read_str(str)
-    tokens = tokenizer(str)
+    return nil if str.size == 0
+
+    tokens = tokenize(str)
     reader = Reader.new(tokens)
     read_form(reader)
   end
@@ -77,7 +80,6 @@ class Tokenizer
       if not token
         raise "unclosed list"
       end
-      # puts read_form(reader)
       list.push(read_form(reader))
     end
     reader.next
@@ -98,4 +100,6 @@ class Tokenizer
   end
 end
 
-puts Tokenizer.new.tokenizer("(+ 2 3)")
+# puts Tokenizer.new.read_str("")
+# puts "----------------------------"
+# puts Tokenizer.new.read_str("(+ 2(* 3 4 ) 5)")
