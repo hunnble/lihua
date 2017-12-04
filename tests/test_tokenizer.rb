@@ -29,4 +29,12 @@ class TestTokenizer < Minitest::Test
     assert_equal @tokenizer.eval(@tokenizer.read_str("(/ 2 3)")), 2 / 3
     assert_equal @tokenizer.eval(@tokenizer.read_str("(+ (- 3 4) 3)")), 2
   end
+
+  def test_eval_environment
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(def! a 6)")), 6
+    assert_equal @tokenizer.eval(@tokenizer.read_str("a")), 6
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(def! b (+ a 2))")), 8
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(+ a b)")), 14
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(let* (c 2) c)")), 2
+  end
 end

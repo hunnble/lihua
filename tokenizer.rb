@@ -1,13 +1,14 @@
 require_relative "reader.rb"
+require_relative "env.rb"
 
 class Tokenizer
   def initialize
     @re = /[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"|;.*|[^\s\[\]{}('"`,;)]*)/
-    @default_env = {}
-    @default_env[:+] = lambda { |a, b|  a + b }
-    @default_env[:-] = lambda { |a, b|  a - b }
-    @default_env[:*] = lambda { |a, b|  a * b }
-    @default_env[:/] = lambda { |a, b|  a / b }
+    @default_env = Env.new
+    @default_env.set(:+, lambda { |a, b|  a + b })
+    @default_env.set(:-, lambda { |a, b|  a - b })
+    @default_env.set(:*, lambda { |a, b|  a * b })
+    @default_env.set(:/, lambda { |a, b|  a / b })
   end
 
   def tokenize(str)
@@ -90,8 +91,8 @@ class Tokenizer
   def eval_ast(ast, env = @default_env)
     return case ast
       when Symbol
-        raise ast.to_s + " is not a valid operator" if not env[ast]
-        env[ast]
+        raise ast.to_s + " is not a valid operator" if not env.get(ast)
+        env.get(ast)
       when Array
         ast.map {|ast_item| eval(ast_item, env)}
       else ast
@@ -107,8 +108,19 @@ class Tokenizer
       return ast
     end
 
-    els = eval_ast(ast, env)
-    op = els[0]
-    op[*els.drop(1)]
+    case ast[0]
+      when :def!
+        env.set(ast[1], eval(ast[2], env))
+      when :"let*"
+        let_env = Env.new(env)
+        ast[1].each_slice(2) do |a,e|
+          let_env.set(a, eval(e, let_env))
+        end
+        eval(ast[2], let_env)
+      else
+        els = eval_ast(ast, env)
+        op = els[0]
+        op[*els.drop(1)]
+    end
   end
 end
