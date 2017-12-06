@@ -53,12 +53,14 @@ class Tokenizer
       when ";" then nil
       when "(" then read_list(reader)
       when ")" then raise "unexpected ')'"
+      when "[" then read_list(reader, Array, "[", "]")
+      when "]" then raise "unexpected ']'"
       else read_atom(reader);
     end
   end
 
-  def read_list(reader, start = "(", last = ")")
-    list = []
+  def read_list(reader, klass = Array, start = "(", last = ")")
+    list = klass.new
     token = reader.next
 
     if token != start
@@ -117,6 +119,25 @@ class Tokenizer
           let_env.set(a, eval(e, let_env))
         end
         eval(ast[2], let_env)
+      when :do
+        result = eval_ast(ast.drop(1), env)
+        result.last
+      when :if
+        a1 = ast[1]
+        if a1 == :nil
+          a1 = false
+        end
+        cond = eval(a1, env)
+        if not cond
+          return nil if ast[3] == nil
+          return eval(ast[3], env)
+        else
+          eval(ast[2], env)
+        end
+      when :"fn*"
+        return lambda {|*args|
+          eval(ast[2], Env.new(env, ast[1], Array.new(args)))
+        }
       else
         els = eval_ast(ast, env)
         op = els[0]

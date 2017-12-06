@@ -37,4 +37,28 @@ class TestTokenizer < Minitest::Test
     assert_equal @tokenizer.eval(@tokenizer.read_str("(+ a b)")), 14
     assert_equal @tokenizer.eval(@tokenizer.read_str("(let* (c 2) c)")), 2
   end
+
+  def test_do
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(do (def! a 6) 7 (+ a 8))")), 14
+    assert_equal @tokenizer.eval(@tokenizer.read_str("a")), 6
+  end
+
+  def test_if
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(if true 7 8)")), 7
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(if false 7 8)")), 8
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(if true (+ 1 7) (+ 1 8))")), 8
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(if false (+ 1 7) (+ 1 8))")), 9
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(if nil 7 8)")), 8
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(if 0 7 8)")), 7
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(if "" 7 8)")), 8
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(if true (+ 1 7))")), 8
+    assert_nil @tokenizer.eval(@tokenizer.read_str("(if false (+ 1 7))"))
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(if nil 8 7)")), 7
+  end
+
+  def test_fn
+    assert_equal @tokenizer.eval(@tokenizer.read_str("((fn* [a] a) 7)")), 7
+    assert_equal @tokenizer.eval(@tokenizer.read_str("((fn* [a] (+ a 1)) 10)")), 11
+    assert_equal @tokenizer.eval(@tokenizer.read_str("((fn* [a b] (+ a b)) 2 3)")), 5
+  end
 end
