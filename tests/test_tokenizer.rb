@@ -61,4 +61,14 @@ class TestTokenizer < Minitest::Test
     assert_equal @tokenizer.eval(@tokenizer.read_str("((fn* [a] (+ a 1)) 10)")), 11
     assert_equal @tokenizer.eval(@tokenizer.read_str("((fn* [a b] (+ a b)) 2 3)")), 5
   end
+
+  def test_tco
+    @tokenizer.eval(@tokenizer.read_str("(def! sum-to (fn* (n) (if (= n 0) 0 (+ n (sum-to (- n 1))))))"))
+    @tokenizer.eval(@tokenizer.read_str("(def! sum2 (fn* (n acc) (if (= n 0) acc (sum2 (- n 1) (+ n acc)))))"))
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(sum-to 10)")), 55
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(sum2 10 0)")), 55
+    @tokenizer.eval(@tokenizer.read_str("(def! foo (fn* (n) (if (= n 0) 0 (bar (- n 1)))))"))
+    @tokenizer.eval(@tokenizer.read_str("(def! bar (fn* (n) (if (= n 0) 0 (foo (- n 1)))))"))
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(foo 10)")), 0
+  end
 end

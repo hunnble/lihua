@@ -1,5 +1,6 @@
 require_relative "reader.rb"
 require_relative "env.rb"
+require_relative "types.rb"
 
 class Tokenizer
   def initialize
@@ -102,46 +103,56 @@ class Tokenizer
   end
 
   def eval(ast, env = @default_env)
-    if not ast.is_a? Array
-      return eval_ast(ast, env)
-    end
+    while true
 
-    if ast.empty?
-      return ast
-    end
+      if not ast.is_a? Array
+        return eval_ast(ast, env)
+      end
 
-    case ast[0]
-      when :def!
-        env.set(ast[1], eval(ast[2], env))
-      when :"let*"
-        let_env = Env.new(env)
-        ast[1].each_slice(2) do |a,e|
-          let_env.set(a, eval(e, let_env))
-        end
-        eval(ast[2], let_env)
-      when :do
-        result = eval_ast(ast.drop(1), env)
-        result.last
-      when :if
-        a1 = ast[1]
-        if a1 == :nil
-          a1 = false
-        end
-        cond = eval(a1, env)
-        if not cond
-          return nil if ast[3] == nil
-          return eval(ast[3], env)
+      if ast.empty?
+        return ast
+      end
+
+      case ast[0]
+        when :def!
+          return env.set(ast[1], eval(ast[2], env))
+        when :"let*"
+          let_env = Env.new(env)
+          ast[1].each_slice(2) do |a,e|
+            let_env.set(a, eval(e, let_env))
+          end
+          env = let_env
+          ast = ast[2]
+        when :do
+          eval_ast(ast[1..-2], env)
+          ast = ast.last
+        when :if
+          a1 = ast[1]
+          if a1 == :nil
+            a1 = false
+          end
+          cond = eval(a1, env)
+          if not cond
+            return nil if ast[3] == nil
+            ast = ast[3]
+          else
+            ast = ast[2]
+          end
+        when :"fn*"
+          return Function.new(ast[2], ast[1], env) {|*args|
+            eval(ast[2], Env.new(env, ast[1], Array.new(args)))
+          }
         else
-          eval(ast[2], env)
-        end
-      when :"fn*"
-        return lambda {|*args|
-          eval(ast[2], Env.new(env, ast[1], Array.new(args)))
-        }
-      else
-        els = eval_ast(ast, env)
-        op = els[0]
-        op[*els.drop(1)]
+          els = eval_ast(ast, env)
+          op = els[0]
+          if op.class == Function
+            ast = op.ast
+            env = op.gen_env(els.drop(1))
+          else
+            return op[*els.drop(1)]
+          end
+      end
+
     end
   end
 end
