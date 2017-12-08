@@ -69,6 +69,6 @@ class TestTokenizer < Minitest::Test
     assert_equal @tokenizer.eval(@tokenizer.read_str("(sum2 10 0)")), 55
     @tokenizer.eval(@tokenizer.read_str("(def! foo (fn* (n) (if (= n 0) 0 (bar (- n 1)))))"))
     @tokenizer.eval(@tokenizer.read_str("(def! bar (fn* (n) (if (= n 0) 0 (foo (- n 1)))))"))
-    assert_equal @tokenizer.eval(@tokenizer.read_str("(foo 10)")), 0
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(foo 10000)")), 0
   end
 end
