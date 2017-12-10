@@ -1,15 +1,18 @@
 require_relative "reader.rb"
 require_relative "env.rb"
 require_relative "types.rb"
+require_relative "core.rb"
 
 class Tokenizer
   def initialize
     @re = /[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"|;.*|[^\s\[\]{}('"`,;)]*)/
     @default_env = Env.new
-    @default_env.set(:+, lambda { |a, b|  a + b })
-    @default_env.set(:-, lambda { |a, b|  a - b })
-    @default_env.set(:*, lambda { |a, b|  a * b })
-    @default_env.set(:/, lambda { |a, b|  a / b })
+    $core_ns.each do |key, val|
+      @default_env.set(key, val)
+    end
+    @default_env.set(:eval, lambda {|ast| eval(ast, @default_env)})
+    @default_env.set(:readString, lambda {|s| read_str(s)})
+    eval(read_str("(def! loadFile (fn* (f) (eval (readString (str \"(do \" (slurp f) \")\")))))"))
   end
 
   def tokenize(str)

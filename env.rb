@@ -1,15 +1,9 @@
-require_relative "core"
-
 class Env
   attr_accessor :data
 
   def initialize(outer = nil, binds = [], exprs = [])
     @data = {}
     @outer = outer
-
-    $core_ns.each do |key, val|
-      data[key] = val
-    end
 
     binds.each_index do |i|
       if binds[i] == :"&"

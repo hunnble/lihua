@@ -70,5 +70,16 @@ class TestTokenizer < Minitest::Test
     @tokenizer.eval(@tokenizer.read_str("(def! foo (fn* (n) (if (= n 0) 0 (bar (- n 1)))))"))
     @tokenizer.eval(@tokenizer.read_str("(def! bar (fn* (n) (if (= n 0) 0 (foo (- n 1)))))"))
     assert_equal @tokenizer.eval(@tokenizer.read_str("(foo 10000)")), 0
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(do (do 1 2))")), 2
+  end
+
+  def test_atom
+    @tokenizer.eval(@tokenizer.read_str("(def! a (atom 2))"))
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(atom? a)")), true
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(atom? 1)")), false
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(deref a)")), 2
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(reset! a 3)")), 3
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(deref a)")), 3
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(swap! a (fn* (a) a))")), 3
   end
 end

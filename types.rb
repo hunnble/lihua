@@ -18,3 +18,11 @@ class Function < Proc
     return Env.new(@env, @params, args)
   end
 end
+
+class Atom
+  attr_accessor :val
+
+  def initialize(val)
+    @val = val
+  end
+end

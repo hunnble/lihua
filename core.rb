@@ -1,3 +1,5 @@
+require_relative "types"
+
 $core_ns = {
   :list => lambda {|*a| Array.new a},
   :list? => lambda {|a| a.is_a? Array},
@@ -11,5 +13,11 @@ $core_ns = {
   :+ => lambda {|a,b| a + b},
   :- => lambda {|a,b| a - b},
   :* => lambda {|a,b| a * b},
-  :/ => lambda {|a,b| a / b}
+  :/ => lambda {|a,b| a / b},
+  :slurp => lambda {|a| File.read(a)},
+  :atom => lambda {|a| Atom.new(a)},
+  :atom? => lambda {|a| a.is_a? Atom},
+  :deref => lambda {|a| a.val},
+  :reset! => lambda {|a, val| a.val = val; val},
+  :swap! => lambda {|*a| a[0].val = a[1][*[a[0].val].concat(a.drop(2))]}
 }
