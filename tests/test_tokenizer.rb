@@ -82,4 +82,20 @@ class TestTokenizer < Minitest::Test
     assert_equal @tokenizer.eval(@tokenizer.read_str("(deref a)")), 3
     assert_equal @tokenizer.eval(@tokenizer.read_str("(swap! a (fn* (a) a))")), 3
   end
+
+  def test_quote
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(quote 7)")), 7
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(quote (1 2 3))")), [1, 2, 3]
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(quasiquote 7)")), 7
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(quasiquote (1 2 3))")), [1, 2, 3]
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(quasiquote nil)")), :nil
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(quasiquote (unquote 7))")), 7
+    @tokenizer.eval(@tokenizer.read_str("(def! a 8)"))
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(quasiquote a)")), :a
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(quasiquote (unquote a))")), 8
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(quasiquote (1 a 3))")), [1, :a, 3]
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(quasiquote (1 (unquote a) 3))")), [1, 8, 3]
+    @tokenizer.eval(@tokenizer.read_str("(def! b (quote (1 2 3)))"))
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(quasiquote (1 (splice-unquote b) 3))")), [1, 1, 2, 3, 3]
+  end
 end

@@ -2,6 +2,7 @@ require_relative "reader.rb"
 require_relative "env.rb"
 require_relative "types.rb"
 require_relative "core.rb"
+require_relative "helper.rb"
 
 class Tokenizer
   def initialize
@@ -126,6 +127,10 @@ class Tokenizer
           end
           env = let_env
           ast = ast[2]
+        when :quote
+          return ast[1]
+        when :quasiquote
+          ast = quasiquote(ast[1])
         when :do
           eval_ast(ast[1..-2], env)
           ast = ast.last
