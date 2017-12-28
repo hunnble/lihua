@@ -98,4 +98,11 @@ class TestTokenizer < Minitest::Test
     @tokenizer.eval(@tokenizer.read_str("(def! b (quote (1 2 3)))"))
     assert_equal @tokenizer.eval(@tokenizer.read_str("(quasiquote (1 (splice-unquote b) 3))")), [1, 1, 2, 3, 3]
   end
+
+  def test_macros
+    @tokenizer.eval(@tokenizer.read_str("(defmacro! one (fn* () 1))"))
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(one)")), 1
+    @tokenizer.eval(@tokenizer.read_str("(defmacro! identity (fn* (x) x))"))
+    assert_equal @tokenizer.eval(@tokenizer.read_str("(let* (a 123) (identity a))")), 123
+  end
 end

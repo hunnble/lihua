@@ -109,6 +109,7 @@ class Tokenizer
   def eval(ast, env = @default_env)
     while true
 
+      ast = macroexpand(ast, env)
       if not ast.is_a? Array
         return eval_ast(ast, env)
       end
@@ -131,6 +132,10 @@ class Tokenizer
           return ast[1]
         when :quasiquote
           ast = quasiquote(ast[1])
+        when :defmacro!
+          func = eval(ast[2], env)
+          func.is_macro = true
+          return env.set(ast[1], func)
         when :do
           eval_ast(ast[1..-2], env)
           ast = ast.last
